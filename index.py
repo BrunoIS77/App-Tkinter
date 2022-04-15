@@ -1,13 +1,14 @@
 #importar tkinter
-import this
 from tkinter import ttk
 from tkinter import *
 
+
 #importar mysql
-import pymysql
+import mysql.connector
+
 
 #Clase product
-class Product:
+class Usuarios:
     def __init__(self, window):
         self.wind = window
         self.wind.title('MOVISTAR PLAY')
@@ -40,8 +41,52 @@ class Product:
         self.tree.heading('#0', text = 'Name', anchor = CENTER)
         self.tree.heading('#1', text = 'Email', anchor = CENTER)
 
+        self.get_users()
+    
+    #metodo para conectar a la base de datos
+    def run_query(self, query, parameters = ()):
+        #conectar a la base de datos
+        db = mysql.connector.connect(
+            host = 'localhost',
+            user = 'root',
+            password = '',
+            database = 'movplay',
+            port = 3306
+        )
+        #crear el cursor
+        cursor = db.cursor()
+        #ejecutar la consulta
+        cursor.execute(query, parameters)
+        #guardar los cambios
+        #obtener los resultados
+        result = cursor.fetchall()
+        #cerrar el cursor
+        cursor.close()
+        #cerrar la conexion
+        db.close()
+        #retornar los resultados
+        return result
+
+
+
+    # Get Products from Database
+    def get_users(self):
+        #limpiar la tabla
+        records = self.tree.get_children()
+        for element in records:
+            self.tree.delete(element)        
+        #ejecutar la consulta
+        query = 'SELECT * FROM usuarios ORDER BY nombre DESC'
+        #ejecutar la consulta
+        db_rows = self.run_query(query)
+        #recorrer los registros
+        for row in db_rows:
+            #agregar los registros a la tabla
+            self.tree.insert('', 0, text = row[1], values = row[2])
+
 if __name__ == '__main__':
     #ejecuta tk
     window = Tk()
-    application = Product(window)
+    application = Usuarios(window)
     window.mainloop()
+
