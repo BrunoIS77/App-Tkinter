@@ -1,6 +1,8 @@
 #importar tkinter
+from ast import operator
 from tkinter import ttk
 from tkinter import *
+from colorama import Cursor
 
 
 #importar mysql
@@ -30,6 +32,11 @@ class Usuarios:
         #boton registrar
         ttk.Button(frame, text = 'Registrar', command = self.add_user).grid(row = 4, columnspan = 2, sticky = W + E)
 
+        #message
+        self.message = Label(text = '', fg = 'red')
+        self.message.grid(row = 3, column = 0, columnspan = 2, sticky = W + E)
+
+
         #Table
         self.tree = ttk.Treeview(height = 10, columns = 2)
         self.tree.grid(row = 5, column = 0, columnspan = 2)
@@ -52,15 +59,25 @@ class Usuarios:
         cursor = db.cursor()
         #ejecutar la consulta
         cursor.execute(query, parameters)
-        #guardar los cambios
-        #obtener los resultados
-        result = cursor.fetchall()
-        #cerrar el cursor
-        cursor.close()
-        #cerrar la conexion
-        db.close()
-        #retornar los resultados
-        return result
+
+        #obtener los registros
+        if query.lower().startswith('select'):
+            #obtener los registros
+            records = cursor.fetchall()
+            #cerrar el cursor
+            cursor.close()
+            #desconectar la base de datos
+            db.close()
+            return records
+        else:
+            #ejecutar el commit
+            db.commit()
+            #cerrar el cursor
+            cursor.close()
+            #desconectar la base de datos
+            db.close()
+            #mensaje de confirmacion
+            print('Registro agregado')
 
     # Get Products from Database
     def get_users(self):
@@ -69,10 +86,10 @@ class Usuarios:
         for element in records:
             self.tree.delete(element)        
         #ejecutar la consulta
-        query1 = 'SELECT id_cuenta, correo, contraseña FROM cuentas'
+        query = 'SELECT id_cuenta, correo, contraseña FROM cuentas order by id_cuenta desc'
         #ejecutar la consulta
-        db_rows = self.run_query(query1)
-        print(query1)
+        db_rows = self.run_query(query)
+
         #recorrer los registros
         for row in db_rows:
             #agregar los registros a la tabla
@@ -84,15 +101,21 @@ class Usuarios:
 
     #agregar nueva cuenta
     def add_user(self):
+        #validar que los campos no esten vacios
         if self.validation():
-            #insertar los datos en la base de datos mysql
-            query2 = "INSERT INTO cuentas VALUES (NULL, '{0}','{1}', NULL)".format(self.email.get(), self.password.get())
-            print(query2)
-            #ejecutar la query
-            self.run_query(query2)
+            #ejecutar la consulta
+            query = 'INSERT INTO cuentas (correo, contraseña) VALUES (%s, %s)'
+            parameters = ( self.email.get(), self.password.get())
+            self.run_query(query, parameters)
+            self.message['text'] = 'Cuenta agregada'.format(self.email.get())
+
+            #limpiar los campos
+            self.email.delete(0, END)
+            self.password.delete(0, END)
+            self.get_users()
         else:
-            print('Ingrese todos los datos')
-        self.get_users()
+            #mensaje de error
+            self.message['text'] = 'Por favor llene todos los campos'
 
 if __name__ == '__main__':
     #ejecuta tk
