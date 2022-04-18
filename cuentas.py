@@ -27,19 +27,14 @@ class Usuarios:
         self.password = Entry(frame)
         self.password.grid(row = 2, column = 1)
 
-        #usuario input
-        Label(frame, text = 'Usuario: ').grid(row = 3, column = 0)
-        self.user = Entry(frame)
-        self.user.grid(row = 3, column = 1)
-
         #boton registrar
-        ttk.Button(frame, text = 'Registrar').grid(row = 4, columnspan = 2, sticky = W + E)
+        ttk.Button(frame, text = 'Registrar', command = self.add_user).grid(row = 4, columnspan = 2, sticky = W + E)
 
         #Table
         self.tree = ttk.Treeview(height = 10, columns = 2)
         self.tree.grid(row = 5, column = 0, columnspan = 2)
-        self.tree.heading('#0', text = 'Name', anchor = CENTER)
-        self.tree.heading('#1', text = 'Correo', anchor = CENTER)
+        self.tree.heading('#0', text = 'Correo', anchor = CENTER)
+        self.tree.heading('#1', text = 'Contraseña', anchor = CENTER)
 
         self.get_users()
     
@@ -74,9 +69,10 @@ class Usuarios:
         for element in records:
             self.tree.delete(element)        
         #ejecutar la consulta
-        query = 'SELECT u.id_usuario, u.nombre, c.correo FROM usuarios u join cuentas c on u.id_usuario = c.id_usuario'
+        query1 = 'SELECT id_cuenta, correo, contraseña FROM cuentas'
         #ejecutar la consulta
-        db_rows = self.run_query(query)
+        db_rows = self.run_query(query1)
+        print(query1)
         #recorrer los registros
         for row in db_rows:
             #agregar los registros a la tabla
@@ -84,24 +80,19 @@ class Usuarios:
 
     #Validar input vacío
     def validation(self):
-        return len(self.email.get()) != 0 and len(self.password.get()) != 0 and len(self.user.get()) != 0
+        return len(self.email.get()) != 0 and len(self.password.get()) != 0
 
-    #Crear un nuevo producto
-    def new_user(self):
+    #agregar nueva cuenta
+    def add_user(self):
         if self.validation():
-            #ejecutar la consulta
-            query = 'INSERT INTO usuarios(nombre) VALUES(%s)'
-            parameters = (self.user.get(),)
-            self.run_query(query, parameters)
-            self.message['text'] = 'Usuario creado'
-            self.get_users()
+            #insertar los datos en la base de datos mysql
+            query2 = "INSERT INTO cuentas VALUES (NULL, '{0}','{1}', NULL)".format(self.email.get(), self.password.get())
+            print(query2)
+            #ejecutar la query
+            self.run_query(query2)
         else:
-            self.message['text'] = 'Por favor llene todos los campos'
-        #limpiar los campos
-        self.email.delete(0, END)
-        self.password.delete(0, END)
-        self.user.delete(0, END)
-
+            print('Ingrese todos los datos')
+        self.get_users()
 
 if __name__ == '__main__':
     #ejecuta tk
