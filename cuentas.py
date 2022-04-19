@@ -15,22 +15,11 @@ class Usuarios:
     def __init__(self, window):
         self.wind = window
         self.wind.title('MOVISTAR PLAY')
-        self.wind.geometry('403x500')
+        self.wind.geometry('402x500')
+        self.wind.resizable(0, 0)
+
+
        
-        # #crear un frame
-        # frame_botones = Frame(self.wind, height = 22, bg = 'blue')
-        # frame_botones.grid(row = 0, column = 0, columnspan=2, sticky = W + E)
-
-        # #crear 3 botones dentro de frame_botones
-        # self.principal = Button(frame_botones, text = 'Principal', height = 1)
-        # self.principal.grid(row = 0, column = 0, sticky = W + E)
-
-        # self.usuarios = Button(frame_botones, text = 'Usuarios', height = 1)
-        # self.usuarios.grid(row = 0, column = 1, sticky = W + E)
-
-        # self.cuentas = Button(frame_botones, text = 'Cuentas', height = 1)
-        # self.cuentas.grid(row = 0, column = 2, sticky = W + E)
-
         ttk.Button(text='Principal').grid(row=0, column=0,columnspan=2, sticky=W + E)
         ttk.Button(text='Usuarios').grid(row=0, column=2,columnspan=2, sticky=W + E)
         ttk.Button(text='Cuentas').grid(row=0, column=4,columnspan=2, sticky=W + E)
@@ -66,11 +55,8 @@ class Usuarios:
         self.tree.heading('#1', text = 'Contraseña', anchor = CENTER)
 
         #botones
-        ttk.Button(text = 'Eliminar').grid(row = 6, column = 0,columnspan=3, sticky = W + E)
-        ttk.Button(text = 'Editar').grid(row = 6, column = 3,columnspan=3, sticky = W + E)
-
-        
-
+        ttk.Button(text = 'Eliminar', command = self.delete_user).grid(row = 6, column = 0,columnspan=3, pady=15, sticky = W + E)
+        ttk.Button(text = 'Editar', command = self.edit_user).grid(row = 6, column = 3,columnspan=3, pady=15, sticky = W + E)
 
         self.get_users()
     
@@ -145,6 +131,71 @@ class Usuarios:
         else:
             #mensaje de error
             self.message['text'] = 'Por favor llene todos los campos'
+
+    #eliminar cuenta
+    def delete_user(self):
+        #obtener el id del producto seleccionado
+        self.message['text'] = ''
+        try:
+            self.tree.item(self.tree.selection())['text'][0]
+        except IndexError as e:
+            self.message['text'] = 'Por favor seleccione una cuenta'
+            return
+        self.message['text'] = ''
+        #obtener el correo del producto seleccionado
+        correo = self.tree.item(self.tree.selection())['text']
+        #ejecutar la consulta
+        query = 'DELETE FROM cuentas WHERE correo = %s'
+        self.run_query(query, (correo,))
+        self.message['text'] = 'Cuenta eliminada'
+        self.get_users()
+
+    #editar cuenta
+    def edit_user(self):
+        #obtener el id del producto seleccionado
+        self.message['text'] = ''
+        try:
+            self.tree.item(self.tree.selection())['text'][0]
+        except IndexError as e:
+            self.message['text'] = 'Por favor seleccione una cuenta'
+            return
+        #obtener el correo del producto seleccionado
+        correo = self.tree.item(self.tree.selection())['text']
+        #obtener la contraseña del producto seleccionado
+        contraseña = self.tree.item(self.tree.selection())['values'][0]
+        self.edit_wind = Toplevel()
+        self.edit_wind.title('Editar cuenta')
+
+        #input correo
+        Label(self.edit_wind, text = 'Correo: ').grid(row = 0, column = 1)
+        self.email = Entry(self.edit_wind, textvariable = StringVar(self.edit_wind, value = correo), state='readonly')
+        self.email.grid(row = 0, column = 2)
+
+        #input contraseña
+        Label(self.edit_wind, text = 'Contraseña: ').grid(row = 1, column = 1)
+        self.password = Entry(self.edit_wind, textvariable = StringVar(self.edit_wind, value = contraseña))
+        self.password.grid(row = 1, column = 2)
+
+        #boton de editar
+        Button(self.edit_wind, text = 'Editar', command = lambda: self.edit_records).grid(row = 3, column = 2, sticky = W)
+
+    #editar registro
+    def edit_records(self):
+        #validar que los campos no esten vacios
+        if self.validation():
+            #obtener el id del producto seleccionado
+            correo = self.tree.item(self.tree.selection())['text']
+            #ejecutar la consulta
+            query = 'UPDATE cuentas SET contraseña = %s WHERE correo = %s'
+            parameters = (self.password.get(), correo)
+            self.run_query(query, parameters)
+            self.edit_wind.destroy()
+            self.message['text'] = 'Cuenta editada'
+            self.get_users()
+        else:
+            #mensaje de error
+            self.message['text'] = 'Por favor llene todos los campos'
+
 
 if __name__ == '__main__':
     #ejecuta tk
