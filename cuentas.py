@@ -2,6 +2,7 @@
 from ast import operator
 from tkinter import ttk
 from tkinter import *
+from turtle import position
 from colorama import Cursor
 
 
@@ -14,12 +15,33 @@ class Usuarios:
     def __init__(self, window):
         self.wind = window
         self.wind.title('MOVISTAR PLAY')
+        self.wind.geometry('403x500')
+       
+        # #crear un frame
+        # frame_botones = Frame(self.wind, height = 22, bg = 'blue')
+        # frame_botones.grid(row = 0, column = 0, columnspan=2, sticky = W + E)
+
+        # #crear 3 botones dentro de frame_botones
+        # self.principal = Button(frame_botones, text = 'Principal', height = 1)
+        # self.principal.grid(row = 0, column = 0, sticky = W + E)
+
+        # self.usuarios = Button(frame_botones, text = 'Usuarios', height = 1)
+        # self.usuarios.grid(row = 0, column = 1, sticky = W + E)
+
+        # self.cuentas = Button(frame_botones, text = 'Cuentas', height = 1)
+        # self.cuentas.grid(row = 0, column = 2, sticky = W + E)
+
+        ttk.Button(text='Principal').grid(row=0, column=0,columnspan=2, sticky=W + E)
+        ttk.Button(text='Usuarios').grid(row=0, column=2,columnspan=2, sticky=W + E)
+        ttk.Button(text='Cuentas').grid(row=0, column=4,columnspan=2, sticky=W + E)
+
+
         #Creating a frame container
-        frame = LabelFrame(self.wind, text = 'Registrar una nueva cuenta')
-        frame.grid(row = 0, column = 0, columnspan = 5, pady = 20)
+        frame = LabelFrame(self.wind, text = 'Registrar una nueva cuenta', padx=10, pady=7)
+        frame.grid(row = 1, column = 0, columnspan = 6, pady = 20)
 
         #correo input
-        Label(frame, text = 'Correo: ').grid(row = 1, column = 0)
+        Label(frame, text = 'Correo: ').grid(row = 1, column = 0, padx=10, pady=10)
         self.email = Entry(frame)
         self.email.focus()
         self.email.grid(row = 1, column = 1)
@@ -34,14 +56,21 @@ class Usuarios:
 
         #message
         self.message = Label(text = '', fg = 'red')
-        self.message.grid(row = 3, column = 0, columnspan = 2, sticky = W + E)
+        self.message.grid(row = 3, column = 0, columnspan = 6, sticky = W + E)
 
 
         #Table
-        self.tree = ttk.Treeview(height = 10, columns = 2)
-        self.tree.grid(row = 5, column = 0, columnspan = 2)
+        self.tree = ttk.Treeview(height = 10, columns = 2,)
+        self.tree.grid(row = 5, column = 0, columnspan = 6)
         self.tree.heading('#0', text = 'Correo', anchor = CENTER)
         self.tree.heading('#1', text = 'Contraseña', anchor = CENTER)
+
+        #botones
+        ttk.Button(text = 'Eliminar').grid(row = 6, column = 0,columnspan=3, sticky = W + E)
+        ttk.Button(text = 'Editar').grid(row = 6, column = 3,columnspan=3, sticky = W + E)
+
+        
+
 
         self.get_users()
     
@@ -86,7 +115,7 @@ class Usuarios:
         for element in records:
             self.tree.delete(element)        
         #ejecutar la consulta
-        query = 'SELECT id_cuenta, correo, contraseña FROM cuentas order by id_cuenta desc'
+        query = 'SELECT id_cuenta, correo, contraseña FROM cuentas ORDER BY id_cuenta desc'
         #ejecutar la consulta
         db_rows = self.run_query(query)
 
