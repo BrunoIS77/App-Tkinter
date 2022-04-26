@@ -14,7 +14,7 @@ import mysql.connector
 class Usuarios:
     def __init__(self, window):
         self.wind = window
-        self.wind.title('MOVISTAR PLAY')
+        self.wind.title('CUENTAS')
         self.wind.geometry('402x500')
         self.wind.resizable(0, 0)
 
